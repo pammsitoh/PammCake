@@ -1,3 +1,7 @@
+<div>
+    <img src="https://github.com/pammsitoh/PammCake/blob/main/pcake_logo.png?raw=true"/>
+</div>
+
 # PammCake: Minecraft Bedrock Addon CLI
 
 **Welcome to pammcake,** a simple Minecraft Bedrock Addon CLI designed for seamless integration of custom addons. Elevate your development experience with elegance and efficiency using the `pcake` command.
