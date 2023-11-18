@@ -14,6 +14,7 @@
     "addons",
     "bedrock"
   ],
+  "repository": "https://github.com/pammsitoh/PammCake",
   "author": "Pammsitoh",
   "license": "ISC",
   "dependencies": {
