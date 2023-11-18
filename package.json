@@ -1,0 +1,24 @@
+{
+  "name": "pammcake",
+  "version": "1.0.31",
+  "bin": {
+    "pcake": "./bin/index.js"
+  },
+  "description": "a simple Minecraft Bedrock Addon CLI designed for seamless integration of custom addons",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "minecraft",
+    "addons",
+    "bedrock"
+  ],
+  "author": "Pammsitoh",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "uuid": "^9.0.1",
+    "yargs": "^17.7.2"
+  }
+}
