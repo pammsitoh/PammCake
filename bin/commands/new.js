@@ -4,6 +4,7 @@ const colors = require("colors");
 const path = require("path");
 const { Success } = require("../../lib/src/lib/Loggers");
 const cakeEntity = require("../../lib/src/elements/CakeEntity");
+const cakeAnimationController = require("../../lib/src/elements/CakeAnimationController");
 
 exports.command = "new <name>";
 exports.desc = "Crear un nuevo archivo";
@@ -46,25 +47,12 @@ exports.handler = function (argv) {
                     "./functions/" + argv.name + ".mcfunction",
                     ""
                 );
-                console.log(`Function "${argv.name}" fue creada!`.yellow);
+                Success(`Function "${argv.name}" fue creada!`);
             }
         );
-    }else if(argv.type === "animation_controller" || argv.type === "ac") {
+    }else if(argv.type === "animation_controller" || "ac") {
 
-        let ac = skeletons.ac;
-        ac.animation_controllers[`controller.animation.${argv.name}`] = {
-            "initial_state": "default",
-            "states": {
-                "default": {
-                    "transitions": [
-                        {
-                            "state_1": "query.is_baby"
-                        }
-                    ]
-                },
-                "state_1": {}
-            }
-        }
+        let ac = new cakeAnimationController( argv.name );
 
         fs.mkdir(
             path.dirname("./animation_controllers/" + argv.name + ".json"),
@@ -72,9 +60,9 @@ exports.handler = function (argv) {
             () => {
                 fs.writeFileSync(
                     "./animation_controllers/" + argv.name + ".json",
-                    JSON.stringify(ac, null, 4)
+                    JSON.stringify(ac.base, null, 4)
                 );
-                console.log(`Animation Controller "${argv.name}" Creado!`.yellow);
+                Success(`Animation Controller "${argv.name}" Creado!`);
             }
         );
     }else return;

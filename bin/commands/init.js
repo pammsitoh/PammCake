@@ -50,7 +50,7 @@ exports.handler = function (argv) {
             );
             fs.writeFileSync("./texts/en_US.lang", base);
             fs.copyFileSync(
-                path.join(__dirname, "../", "assets", "pack_icon.png"),
+                path.join(__dirname, "../../", "assets", "pack_icon.png"),
                 "./pack_icon.png"
             );
         });
