@@ -16,7 +16,7 @@
   ],
   "repository": "https://github.com/pammsitoh/PammCake",
   "author": "Pammsitoh",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "colors": "^1.4.0",
     "uuid": "^9.0.1",

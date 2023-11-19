@@ -2,6 +2,8 @@
     <img src="https://github.com/pammsitoh/PammCake/blob/main/pcake_logo.png?raw=true"/>
 </div>
 
+[![npm version](https://img.shields.io/npm/v/pammcake.svg)](https://www.npmjs.com/package/pammcake) [![NPM downloads](https://img.shields.io/npm/dm/pammcake.svg?style=flat)](https://www.npmjs.com/package/pammcake) [![license](https://img.shields.io/npm/l/pammcake.svg)](https://www.npmjs.com/package/pammcake)
+
 # PammCake: Minecraft Bedrock Addon CLI
 
 **Welcome to pammcake,** a simple Minecraft Bedrock Addon CLI designed for seamless integration of custom addons. Elevate your development experience with elegance and efficiency using the `pcake` command.
