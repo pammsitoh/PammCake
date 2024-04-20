@@ -31,9 +31,7 @@ exports.handler = function (argv) {
                     (a) => a == `#:pcake/>${argv.controller}`
                 )
             ) {
-                content["minecraft:entity"].description.scripts.animate.push(
-                    `#:pcake/>${argv.controller}`
-                );
+                content["minecraft:entity"].description.scripts.animate.push(`#:pcake/>${argv.controller}`);
             }
 
             fs.writeFileSync(

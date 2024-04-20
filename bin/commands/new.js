@@ -51,7 +51,6 @@ exports.handler = function (argv) {
             }
         );
     }else if(argv.type === "animation_controller" || "ac") {
-
         let ac = new cakeAnimationController( argv.name );
 
         fs.mkdir(
