@@ -19,6 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "colors": "^1.4.0",
+    "fs-extra": "^11.2.0",
     "uuid": "^9.0.1",
     "yargs": "^17.7.2"
   }
