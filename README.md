@@ -12,36 +12,36 @@
 
 Explore the refined commands curated for managing addon projects with finesse in the development environment.
 
-### Initialize a New Addon Project
+### Initialize a New Addon Project In The Current Folder
 
 ```bash
-pcake init <project_name> [-r]
+pcake init <project_name> [-b]
 ```
 
-_Create a new addon project, ensuring a smooth start. For behavior packs, include `-r` to initialize a resource pack as well._
+_Create a new addon project, ensuring a smooth start. , include `-b` to initialize addon in the current folder, if not the addon will be created on the development folders in minecraft bedrock._
 
-### Generate New Files in the Behavior Pack
+### Save to Minecraft Bedrock.
 
 ```bash
-pcake new <FileName> -t <Type> -i <Identifier>
+pcake save
 ```
 
-_Effortlessly generate the foundation for new files in the behavior pack. Specify type and identifier for precise customization._
+_This save ethe addon (BP and RP) to the development folders._
 
-### Manage Translations in Project Files
+### Watch project
 
 ```bash
-pcake texts
+pcake watch
 ```
 
-_Efficiently handle translations in project files. Simplify the internationalization process with ease._
+_Watch your project for changes, this changes will be applied automatically to de development folders._
 
-### Link Animation Controller to Entity
+### Watch project
 
 ```bash
-pcake aclink <AnimationControllerName> <EntityFileName>
+pcake build [-z]
 ```
 
-_Create seamless animations by linking an animation controller to a specific entity. Enhance the visual appeal of your creations._
+_Save your project as .mcaddon, you can include -z to export as a .zip_
 
 Feel the sophistication and power of pammcake as you weave your creative magic into the Minecraft Bedrock environment. Effortlessly manage resources and craft a seamless gaming experience.
