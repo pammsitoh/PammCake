@@ -36,7 +36,7 @@ pcake watch
 
 _Watch your project for changes, this changes will be applied automatically to de development folders._
 
-### Watch project
+### Build Project
 
 ```bash
 pcake build [-z]
