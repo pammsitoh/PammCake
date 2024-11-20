@@ -1,6 +1,6 @@
 {
   "name": "pammcake",
-  "version": "1.0.36",
+  "version": "1.0.37",
   "bin": {
     "pcake": "./bin/index.js"
   },
@@ -23,6 +23,7 @@
     "chokidar": "^3.6.0",
     "colors": "^1.4.0",
     "fs-extra": "^11.2.0",
+    "gumaddon": "^1.0.10",
     "uuid": "^9.0.1",
     "yargs": "^17.7.2"
   }
