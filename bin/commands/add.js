@@ -8,6 +8,7 @@ const AdmZip = require("adm-zip");
 const { argv } = require("process");
 const { AddonManager } = require("gumaddon");
 const addScripts = require("../../lib/src/adds/addScripts");
+const AddModule = require("../../lib/src/adds/addModule");
 
 const MINECRAFT_PACKAGE_PATH = path.join(
     os.homedir(),
@@ -52,6 +53,8 @@ const addElement = async (args) => {
 
         if (args.thing === "scripts") {
             await addScripts(addon);
+        } else {
+            await AddModule(addon, args.thing);
         }
     } catch (error) {
         console.error(
