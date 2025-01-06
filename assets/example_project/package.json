@@ -6,12 +6,12 @@
   "scripts": {
     "build": "pcake build addon",
     "save": "pcake save",
-    "watch": "pcake watch"
+    "dev": "pcake watch"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@minecraft/server": "^1.9.0"
+    "@minecraft/server": "^1.16.0"
   }
 }

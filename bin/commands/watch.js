@@ -7,6 +7,7 @@ const uuid = require("uuid");
 const os = require("os");
 const path = require("path");
 const cakeManifest = require("../../lib/src/elements/CakeManifest");
+const { MenuCompiler } = require("../../lib/src/compilers/MenuCompilers");
 
 exports.command = "watch";
 exports.desc = "Vigilar Cambios";
@@ -65,9 +66,9 @@ exports.handler = async function (argv) {
                 `█+█ Carpeta ${source} sincronizada con ${target}`.green
             );
         } catch (err) {
-            console.error(
-                `[!] Error al sincronizar carpetas: ${err.message}`.red
-            );
+            // console.error(
+            //     `[!] Error al sincronizar carpetas: ${err.message}`.red
+            // );
         }
     };
 
@@ -75,7 +76,15 @@ exports.handler = async function (argv) {
     const bpWatcher = chokidar.watch(bp_path, { persistent: true });
     bpWatcher
         .on("add", (path) => syncFolders(bp_path, editing_bp_path))
-        .on("change", (path) => syncFolders(bp_path, editing_bp_path))
+        .on("change", (epath) => {
+            syncFolders(bp_path, editing_bp_path)
+            const stat = fs.statSync(epath, {});
+            if(stat.isFile()) {
+                const ext = path.extname(epath);
+                if(ext != ".pcake") return;
+                MenuCompiler()
+            }
+        })
         .on("unlink", (path) => syncFolders(bp_path, editing_bp_path));
 
     // Vigilar cambios en RP

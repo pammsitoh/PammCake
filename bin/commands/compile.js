@@ -6,8 +6,9 @@ const os = require("os");
 const path = require("path");
 const cakeManifest = require("../../lib/src/elements/CakeManifest");
 const { EntityCompiler } = require("../../lib/src/compilers/EntityCompiler");
+const { MenuCompiler } = require("../../lib/src/compilers/MenuCompilers");
 
-exports.command = "compile";
+exports.command = "compile <compile_type>";
 exports.desc = "Guardar proyecto para pruebas";
 exports.builder = {
     type: {
@@ -17,6 +18,7 @@ exports.builder = {
     },
 };
 exports.handler = async function (argv) {
+    if(!argv.compile_type) return;
     const pcake_file = fs.readFileSync("./pcake.config.json", {
         encoding: "utf8",
     });
@@ -29,8 +31,12 @@ exports.handler = async function (argv) {
         return;
     }
 
-    const eCompiler = new EntityCompiler("./addon/BP/entities");
-    eCompiler.loadCompilables(() => {
-        eCompiler.startCompiler();
-    });
+    switch (argv.compile_type) {
+        case "menus":
+            MenuCompiler();
+            break;
+    
+        default:
+            break;
+    }
 };

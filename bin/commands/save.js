@@ -25,6 +25,7 @@ exports.handler = async function (argv) {
         saveInServer();
         return;
     }
+
     const pcake_file = fs.readFileSync('./pcake.config.json', { encoding: 'utf8' });
     const config = JSON.parse(pcake_file);
     if(!fs.existsSync("./addon/BP") || !fs.existsSync("./addon/RP")) {
