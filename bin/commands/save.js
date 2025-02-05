@@ -64,4 +64,4 @@ const saveInServer = async () => {
             fs.copy("./addon/RP", path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`));
         });
     }
-}
+};

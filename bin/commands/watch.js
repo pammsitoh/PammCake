@@ -81,8 +81,8 @@ exports.handler = async function (argv) {
             const stat = fs.statSync(epath, {});
             if(stat.isFile()) {
                 const ext = path.extname(epath);
-                if(ext != ".pcake") return;
-                MenuCompiler()
+                if(ext != ".pcakemenu") return;
+                MenuCompiler();
             }
         })
         .on("unlink", (path) => syncFolders(bp_path, editing_bp_path));
