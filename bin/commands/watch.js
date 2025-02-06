@@ -8,6 +8,7 @@ const os = require("os");
 const path = require("path");
 const cakeManifest = require("../../lib/src/elements/CakeManifest");
 const { MenuCompiler } = require("../../lib/src/compilers/MenuCompilers");
+const { CopyGuyCompile } = require("../../lib/src/compilers/CopyGuy");
 
 exports.command = "watch";
 exports.desc = "Vigilar Cambios";
@@ -81,8 +82,19 @@ exports.handler = async function (argv) {
             const stat = fs.statSync(epath, {});
             if(stat.isFile()) {
                 const ext = path.extname(epath);
-                if(ext != ".pcakemenu") return;
-                MenuCompiler();
+
+                switch (ext) {
+                    case ".pcakemenu":
+                        MenuCompiler();
+                        break;
+
+                    case ".pcakecopyguy":
+                        CopyGuyCompile(epath);
+                        break;
+                
+                    default:
+                        break;
+                }
             }
         })
         .on("unlink", (path) => syncFolders(bp_path, editing_bp_path));
