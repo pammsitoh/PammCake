@@ -34,7 +34,8 @@ exports.handler = async function (argv) {
     };
 
     const rutaDirectorioPrincipal = os.homedir();
-    const rutaCarpetaUsuario = path.join(rutaDirectorioPrincipal, 'AppData', 'Local', 'Packages', 'Microsoft.MinecraftUWP_8wekyb3d8bbwe', 'LocalState', 'games', 'com.mojang');
+    // path.join(rutaDirectorioPrincipal, 'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang')
+    const rutaCarpetaUsuario = path.join(rutaDirectorioPrincipal, 'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang');
 
     if('name' in config && 'identifier' in config) {
         await fs.remove(path.join(rutaCarpetaUsuario, 'development_behavior_packs', `${config.name}[${config.identifier}] - BP`)).then(() => {

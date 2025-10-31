@@ -27,13 +27,7 @@ exports.handler = async function (argv) {
         const rutaDirectorioPrincipal = os.homedir();
         const rutaCarpetaUsuario = path.join(
             rutaDirectorioPrincipal,
-            "AppData",
-            "Local",
-            "Packages",
-            "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-            "LocalState",
-            "games",
-            "com.mojang"
+            'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang'
         );
 
         const defpath_bp = argv.basic
