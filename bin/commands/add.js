@@ -9,17 +9,7 @@ const { argv } = require("process");
 const { AddonManager } = require("gumaddon");
 const addScripts = require("../../lib/src/adds/addScripts");
 const AddModule = require("../../lib/src/adds/addModule");
-
-const MINECRAFT_PACKAGE_PATH = path.join(
-    os.homedir(),
-    "AppData",
-    "Local",
-    "Packages",
-    "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-    "LocalState",
-    "games",
-    "com.mojang"
-);
+const addTypescript = require("../../lib/src/adds/addTypescript");
 
 exports.command = "add <thing>";
 exports.desc = "Add a pcake package in addon project";
@@ -53,6 +43,8 @@ const addElement = async (args) => {
 
         if (args.thing === "scripts") {
             await addScripts(addon);
+        } else if (args.thing === "typescript") {
+            await addTypescript(addon);
         } else {
             await AddModule(addon, args.thing);
         }

@@ -33,16 +33,7 @@ exports.handler = async function (argv) {
     }
 
     const rutaDirectorioPrincipal = os.homedir();
-    const rutaCarpetaUsuario = path.join(
-        rutaDirectorioPrincipal,
-        "AppData",
-        "Local",
-        "Packages",
-        "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-        "LocalState",
-        "games",
-        "com.mojang"
-    );
+    const rutaCarpetaUsuario = path.join(rutaDirectorioPrincipal, 'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang');
 
     const bp_path = "./addon/BP";
     const rp_path = "./addon/RP";
