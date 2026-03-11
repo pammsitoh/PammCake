@@ -1,6 +1,6 @@
 {
   "name": "pammcake",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "bin": {
     "pcake": "./bin/index.js"
   },
