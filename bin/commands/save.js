@@ -6,6 +6,8 @@ const os = require('os');
 const path = require("path");
 const cakeManifest = require("../../lib/src/elements/CakeManifest");
 
+const { execSync } = require("child_process");
+
 exports.command = "save";
 exports.desc = "Guardar proyecto para pruebas";
 exports.builder = {
@@ -20,7 +22,21 @@ exports.builder = {
         description: "save addon in development server"
     }
 };
+
+const runTsc = () => {
+    if (fs.existsSync("./tsconfig.json")) {
+        try {
+            console.log(`[PammCake]: Compilando TypeScript...`.yellow);
+            execSync("tsc", { stdio: "inherit" });
+            console.log(`[PammCake]: TypeScript compilado con éxito.`.green);
+        } catch (err) {
+            console.log(`[PammCake]: Error al compilar TypeScript.`.red);
+        }
+    }
+};
+
 exports.handler = async function (argv) {
+    runTsc();
     if(argv.server) {
         saveInServer();
         return;

@@ -1,6 +1,6 @@
 {
   "name": "pammcake",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "bin": {
     "pcake": "./bin/index.js"
   },
@@ -26,6 +26,10 @@
     "gumaddon": "^1.0.10",
     "ssh2-sftp-client": "^11.0.0",
     "uuid": "^9.0.1",
+    "ws": "^8.19.0",
     "yargs": "^17.7.2"
+  },
+  "overrides": {
+    "glob": "^13.0.0"
   }
 }
