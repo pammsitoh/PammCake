@@ -71,7 +71,7 @@ exports.handler = async function (argv) {
 
             function createLang() {
                 fs.mkdir(path.join(apath, "texts"), () => {
-                    const base = `pack.name=${argv.project_name} Behaviors\npack.description=§bInitialized with PCake \n\n#:pcake/>`;
+                    const base = `pack.name=${argv.project_name} Behaviors\npack.description=§bInitialized with PCake`;
 
                     fs.writeFileSync(
                         path.join(apath, "texts", "languages.json"),

@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@minecraft/server": "^1.16.0"
+    "@minecraft/server": "^2.4.0"
   }
 }

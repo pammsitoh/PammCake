@@ -35,7 +35,6 @@ exports.handler = async function (argv) {
                 console.log(`█▓▒░ Compilando TypeScript...`.yellow);
                 execSync("tsc", { stdio: "pipe" });
                 console.log(`█▓▒░ TypeScript compilado con éxito.`.green);
-                displayMessage();
             } catch (err) {
                 console.log(`█▓▒░ Error al compilar TypeScript.`.red);
                 
