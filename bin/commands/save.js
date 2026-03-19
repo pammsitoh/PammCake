@@ -7,6 +7,7 @@ const path = require("path");
 const cakeManifest = require("../../lib/src/elements/CakeManifest");
 
 const { execSync } = require("child_process");
+const logger = require("../../lib/src/lib/Loggers");
 
 exports.command = "save";
 exports.desc = "Guardar proyecto para pruebas";
@@ -26,11 +27,11 @@ exports.builder = {
 const runTsc = () => {
     if (fs.existsSync("./tsconfig.json")) {
         try {
-            console.log(`[PammCake]: Compilando TypeScript...`.yellow);
+            logger.Log(`Compilando TypeScript...`.yellow);
             execSync("tsc", { stdio: "inherit" });
-            console.log(`[PammCake]: TypeScript compilado con éxito.`.green);
+            logger.Success(`TypeScript compilado con éxito.`.green);
         } catch (err) {
-            console.log(`[PammCake]: Error al compilar TypeScript.`.red);
+            logger.Error(`Error al compilar TypeScript.`.red);
         }
     }
 };
@@ -61,6 +62,8 @@ exports.handler = async function (argv) {
             fs.copy("./addon/RP", path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`));
         });
     }
+
+    logger.Success(`Proyecto guardado con éxito.`);
 };
 
 const saveInServer = async () => {
