@@ -1,170 +1,69 @@
 const fs = require("fs");
 const fse = require("fs-extra");
-const skeletons = require("../../templates/skeletons");
-const colors = require("colors");
-const uuid = require("uuid");
-const os = require("os");
 const path = require("path");
-const cakeManifest = require("../../lib/src/elements/CakeManifest");
+require("colors");
+const CakeManifest = require("../../lib/src/elements/CakeManifest");
 
 exports.command = "init <project_name>";
-exports.desc = "Incializar proyecto.";
-exports.builder = {
-    basic: {
-        type: "boolean",
-        alias: "b",
-        description: "Inicializar proyecto basico de PammCake",
-    },
-    studio: {
-        type: "boolean",
-        alias: "s",
-        description:
-            "Inicializar un proyecto de pammcake con namespace para la marketplace",
-    },
-};
+exports.desc = "Inicializar proyecto en el directorio actual.";
+exports.builder = {};
+
 exports.handler = async function (argv) {
-    function _goContinue() {
-        const rutaDirectorioPrincipal = os.homedir();
-        const rutaCarpetaUsuario = path.join(
-            rutaDirectorioPrincipal,
-            'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang'
+    try {
+        // Copia los archivos del proyecto ejemplo al directorio actual
+        await fse.copy(path.join(__dirname, "../../assets/example_project"), "./");
+
+        // Crea el archivo de configuración con el nombre del proyecto
+        fs.writeFileSync(
+            "./pcake.config.json",
+            JSON.stringify({ name: argv.project_name, identifier: "dev" }, null, 4)
         );
 
-        const defpath_bp = argv.basic
-            ? path.join("addon", `BP`)
-            : path.join(
-                  rutaCarpetaUsuario,
-                  "development_behavior_packs",
-                  `${argv.project_name} - BP`
-              );
-        const defpath_rp = argv.basic
-            ? path.join("addon", `RP`)
-            : path.join(
-                  rutaCarpetaUsuario,
-                  "development_resource_packs",
-                  `${argv.project_name} - RP`
-              );
-
-        fs.mkdir(defpath_bp, { recursive: true }, () => {
-            const apath = defpath_bp;
-
-            let file = new cakeManifest();
-            file.base.modules[0].type = "data";
-            file.setVersion([1, 0, 0]);
-
-            if (!fs.existsSync(path.join(apath, "manifest.json"))) {
-                fs.writeFileSync(
-                    path.join(apath, "manifest.json"),
-                    JSON.stringify(file.base, null, 4)
-                );
-                createLang();
-                console.log(
-                    `[√] Proyecto "${argv.project_name} - BP" Creado!`.green
-                );
-                return;
-            }
-
-            console.log(
-                `<!> Se intento Crear "${argv.project_name} - BP" pero ya existe.`
-                    .red
-            );
-
-            function createLang() {
-                fs.mkdir(path.join(apath, "texts"), () => {
-                    const base = `pack.name=${argv.project_name} Behaviors\npack.description=§bInitialized with PCake`;
-
-                    fs.writeFileSync(
-                        path.join(apath, "texts", "languages.json"),
-                        JSON.stringify(["en_US"], null, 4)
-                    );
-                    fs.writeFileSync(
-                        path.join(apath, "texts", "en_US.lang"),
-                        base
-                    );
-                    fs.copyFileSync(
-                        path.join(
-                            __dirname,
-                            "../../",
-                            "assets",
-                            "pack_icon.png"
-                        ),
-                        path.join(apath, "pack_icon.png")
-                    );
-                });
-            }
-        });
-
-        fs.mkdir(defpath_rp, { recursive: true }, () => {
-            const apath = defpath_rp;
-
-            let file = new cakeManifest();
-            file.base.modules[0].type = "resources";
-            file.setVersion([1, 0, 0]);
-
-            if (!fs.existsSync(path.join(apath, "manifest.json"))) {
-                fs.writeFileSync(
-                    path.join(apath, "manifest.json"),
-                    JSON.stringify(file.base, null, 4)
-                );
-                createLang();
-                console.log(
-                    `[√] Proyecto "${argv.project_name} - RP" Creado!`.green
-                );
-                return;
-            }
-
-            console.log(
-                `<!> Se intento Crear "${argv.project_name} - RP" pero ya existe.`
-                    .red
-            );
-
-            function createLang() {
-                fs.mkdir(path.join(apath, "texts"), () => {
-                    const base = `pack.name=${argv.project_name} Resources\npack.description=§dInitialized with PCake`;
-
-                    fs.writeFileSync(
-                        path.join(apath, "texts", "languages.json"),
-                        JSON.stringify(["en_US"], null, 4)
-                    );
-                    fs.writeFileSync(
-                        path.join(apath, "texts", "en_US.lang"),
-                        base
-                    );
-                    fs.copyFileSync(
-                        path.join(
-                            __dirname,
-                            "../../",
-                            "assets",
-                            "pack_icon.png"
-                        ),
-                        path.join(apath, "pack_icon.png")
-                    );
-                });
-            }
-        });
-    }
-
-    if (argv.basic) {
-        await fse.copy(
-            path.join(__dirname, "../../", "assets", "example_project"),
-            "./",
-            (err) => {
-                if (err) {
-                    console.error("Error al crear el proyecto:", err);
-                } else {
-                    console.log("El proyecto se ha creado exitosamente.");
-                    const pcake_new_config = {
-                        name: argv.project_name,
-                        identifier: "dev",
-                    };
-                    fs.writeFileSync(
-                        "./pcake.config.json",
-                        JSON.stringify(pcake_new_config, null, 4)
-                    );
-
-                    _goContinue();
-                }
-            }
-        );
+        // Crea las carpetas BP y RP dentro de ./addon/
+        createPack(path.join("addon", "BP"), argv.project_name, "data",      "Behaviors", "§b");
+        createPack(path.join("addon", "RP"), argv.project_name, "resources", "Resources", "§d");
+    } catch (err) {
+        console.error("Error al crear el proyecto:".red, err.message);
     }
 };
+
+/**
+ * Crea una carpeta de pack (BP o RP) con su manifest.json, archivos de idioma e ícono.
+ *
+ * @param {string} packPath   - Ruta donde crear el pack (ej: "addon/BP")
+ * @param {string} projectName - Nombre del proyecto
+ * @param {"data" | "resources"} moduleType - Tipo de módulo del manifest
+ * @param {string} packLabel  - "Behaviors" o "Resources"
+ * @param {string} colorCode  - Código de color de Minecraft para la descripción (ej: "§b")
+ */
+function createPack(packPath, projectName, moduleType, packLabel, colorCode) {
+    fs.mkdirSync(packPath, { recursive: true });
+
+    if (fs.existsSync(path.join(packPath, "manifest.json"))) {
+        console.log(`<!> "${projectName} - ${packLabel}" ya existe.`.red);
+        return;
+    }
+
+    // Genera el manifest.json con UUIDs únicos
+    const manifest = new CakeManifest();
+    manifest.base.modules[0].type = moduleType;
+    manifest.setVersion([1, 0, 0]);
+    fs.writeFileSync(path.join(packPath, "manifest.json"), JSON.stringify(manifest.base, null, 4));
+
+    // Crea los archivos de idioma
+    const textsPath = path.join(packPath, "texts");
+    fs.mkdirSync(textsPath, { recursive: true });
+    fs.writeFileSync(path.join(textsPath, "languages.json"), JSON.stringify(["en_US"], null, 4));
+    fs.writeFileSync(
+        path.join(textsPath, "en_US.lang"),
+        `pack.name=${projectName} ${packLabel}\npack.description=${colorCode}Initialized with PCake`
+    );
+
+    // Copia el ícono por defecto del pack
+    fs.copyFileSync(
+        path.join(__dirname, "../../assets/pack_icon.png"),
+        path.join(packPath, "pack_icon.png")
+    );
+
+    console.log(`[√] "${projectName} - ${packLabel}" creado!`.green);
+}

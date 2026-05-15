@@ -1,57 +1,33 @@
 const fs = require("fs-extra");
-const skeletons = require("../../templates/skeletons");
-const colors = require("colors");
-const uuid = require("uuid");
-const os = require("os");
-const path = require("path");
-const AdmZip = require("adm-zip");
-const { argv } = require("process");
+require("colors");
 const { AddonManager } = require("gumaddon");
 const addScripts = require("../../lib/src/adds/addScripts");
 const AddModule = require("../../lib/src/adds/addModule");
 const addTypescript = require("../../lib/src/adds/addTypescript");
 
 exports.command = "add <thing>";
-exports.desc = "Add a pcake package in addon project";
+exports.desc = "Agregar un paquete o módulo al proyecto";
 exports.builder = {};
+
 exports.handler = async function (argv) {
     if (!argv.thing) return;
-    try {
-        await addElement(argv);
-    } catch (error) {
-        console.error(`[!] Error: ${error.message}`.red);
-    }
-};
 
-const addElement = async (args) => {
     const addon = new AddonManager("./addon");
 
+    if (!fs.existsSync("./addon/BP") || !fs.existsSync("./addon/RP")) {
+        console.log(`[!] Asegúrate de que existan las carpetas "addon/BP" y "addon/RP".`.red);
+        return;
+    }
+
     try {
-        const pcakeFileContent = await fs.readFile(
-            "./pcake.config.json",
-            "utf8"
-        );
-        const config = JSON.parse(pcakeFileContent);
-
-        if (!fs.existsSync("./addon/BP") || !fs.existsSync("./addon/RP")) {
-            console.log(
-                `[!] Asegúrate de que tanto la carpeta "BP" y "RP" existan en tu proyecto.`
-                    .red
-            );
-            return;
-        }
-
-        if (args.thing === "scripts") {
+        if (argv.thing === "scripts") {
             await addScripts(addon);
-        } else if (args.thing === "typescript") {
+        } else if (argv.thing === "typescript") {
             await addTypescript(addon);
         } else {
-            await AddModule(addon, args.thing);
+            await AddModule(addon, argv.thing);
         }
     } catch (error) {
-        console.error(
-            `[!] Error al leer el archivo de configuración: ${error.message}`
-                .red
-        );
+        console.error(`[!] Error: ${error.message}`.red);
     }
 };

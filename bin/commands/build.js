@@ -1,136 +1,94 @@
 const fs = require("fs-extra");
-const skeletons = require("../../templates/skeletons");
-const colors = require("colors");
-const uuid = require("uuid");
-const os = require("os");
 const path = require("path");
-const cakeManifest = require("../../lib/src/elements/CakeManifest");
+const os = require("os");
 const archiver = require("archiver");
 
 exports.command = "build <project_name>";
-exports.desc = "Construir proyecto";
+exports.desc = "Construir y empaquetar el addon";
 exports.builder = {
     zip: {
         type: "boolean",
         alias: "z",
-        description: "zip mode",
+        description: "Exportar como .zip en lugar de .mcaddon",
     },
     fast: {
         type: "boolean",
         alias: "f",
-        description: "fast build",
+        description: "Build rápido: exporta directamente desde la carpeta de Minecraft",
     },
 };
+
 exports.handler = async function (argv) {
     if (argv.fast) {
-        FastBuild(argv);
+        fastBuild(argv);
+    } else {
+        prodBuild(argv);
+    }
+};
+
+/**
+ * Build de producción: empaqueta ./addon/BP y ./addon/RP en un archivo .mcaddon.
+ * Guarda el resultado en ./.build/
+ */
+const prodBuild = (argv) => {
+    if (!fs.existsSync("./pcake.config.json")) {
+        console.error("[!] No se encontró pcake.config.json.");
         return;
     }
-    ProdBuild(argv);
-};
-
-const ProdBuild = (argv) => {
-    if (!fs.existsSync("./pcake.config.json")) return;
-    const pcake_file = fs.readFileSync("./pcake.config.json", {
-        encoding: "utf8",
-    });
-    const config = JSON.parse(pcake_file);
-
-    // Proceso de compilado...
-
-    // Compress Process...
 
     if (!fs.existsSync("./.build/")) {
-        fs.mkdir("./.build/");
+        fs.mkdirSync("./.build/");
     }
 
-    const resultPath = `./.build/build.${argv.zip ? "zip" : "mcaddon"}`;
+    const outputPath = `./.build/build.${argv.zip ? "zip" : "mcaddon"}`;
+    const folders = [
+        ["./addon/BP", "BP"],
+        ["./addon/RP", "RP"],
+    ];
 
-    const zipFile = archiver("zip", {
-        zlib: { level: 9 },
-    });
-
-    const fileOutput = fs.createWriteStream(resultPath);
-
-    // Maneja eventos de finalización y errores
-    fileOutput.on("close", function () {
-        console.log("Archivo zip creado correctamente.");
-    });
-
-    zipFile.on("error", function (err) {
-        console.error("Error al crear el archivo zip:", err);
-    });
-
-    // Conecta el objeto Archiver con la salida del archivo
-    zipFile.pipe(fileOutput);
-
-    function addFolderToZip(folder, folder_name) {
-        zipFile.directory(folder, folder_name);
-        console.log(`Carpeta "${folder_name}" agregada al archivo zip.`);
-    }
-
-    addFolderToZip("./addon/BP", "BP");
-    addFolderToZip("./addon/RP", "RP");
-
-    zipFile.finalize();
+    createArchive(outputPath, folders);
 };
 
-const FastBuild = (argv) => {
-    const rutaDirectorioPrincipal = os.homedir();
-    const rutaCarpetaUsuario = path.join(
-        rutaDirectorioPrincipal,
-        "AppData",
-        "Local",
-        "Packages",
+/**
+ * Build rápido: exporta el addon que ya está instalado en Minecraft.
+ * Útil para distribuir rápidamente sin pasar por ./addon.
+ */
+const fastBuild = (argv) => {
+    const minecraftPath = path.join(
+        os.homedir(),
+        "AppData", "Local", "Packages",
         "Microsoft.MinecraftUWP_8wekyb3d8bbwe",
-        "LocalState",
-        "games",
-        "com.mojang"
+        "LocalState", "games", "com.mojang"
     );
-    // Proceso de compilado...
 
-    // Compress Process...
-    const resultPath = `./exported.${argv.zip ? "zip" : "mcaddon"}`;
+    const outputPath = `./exported.${argv.zip ? "zip" : "mcaddon"}`;
+    const folders = [
+        [path.join(minecraftPath, "development_behavior_packs", `${argv.project_name} - BP`), "BP"],
+        [path.join(minecraftPath, "development_resource_packs", `${argv.project_name} - RP`), "RP"],
+    ];
 
-    const zipFile = archiver("zip", {
-        zlib: { level: 9 },
-    });
+    createArchive(outputPath, folders);
+};
 
-    const fileOutput = fs.createWriteStream(resultPath);
+/**
+ * Crea un archivo zip/mcaddon con las carpetas indicadas.
+ *
+ * @param {string} outputPath - Ruta del archivo de salida (ej: "./build/addon.mcaddon")
+ * @param {[string, string][]} folders - Array de pares [rutaCarpeta, nombreDentroDelZip]
+ */
+const createArchive = (outputPath, folders) => {
+    const archive = archiver("zip", { zlib: { level: 9 } });
+    const output = fs.createWriteStream(outputPath);
 
-    // Maneja eventos de finalización y errores
-    fileOutput.on("close", function () {
-        console.log("Archivo zip creado correctamente.");
-    });
+    output.on("close", () => console.log("Archivo creado correctamente."));
+    archive.on("error", (err) => console.error("Error al crear el archivo:", err));
 
-    zipFile.on("error", function (err) {
-        console.error("Error al crear el archivo zip:", err);
-    });
+    archive.pipe(output);
 
-    // Conecta el objeto Archiver con la salida del archivo
-    zipFile.pipe(fileOutput);
-
-    function addFolderToZip(folder, folder_name) {
-        zipFile.directory(folder, folder_name);
-        console.log(`Carpeta "${folder_name}" agregada al archivo zip.`);
+    for (const [folderPath, folderName] of folders) {
+        archive.directory(folderPath, folderName);
+        console.log(`Carpeta "${folderName}" agregada.`);
     }
 
-    addFolderToZip(
-        path.join(
-            rutaCarpetaUsuario,
-            "development_behavior_packs",
-            `${argv.project_name} - BP`
-        ),
-        "BP"
-    );
-    addFolderToZip(
-        path.join(
-            rutaCarpetaUsuario,
-            "development_resource_packs",
-            `${argv.project_name} - RP`
-        ),
-        "RP"
-    );
-
-    zipFile.finalize();
+    archive.finalize();
 };

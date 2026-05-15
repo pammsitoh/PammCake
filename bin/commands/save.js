@@ -1,87 +1,69 @@
 const fs = require("fs-extra");
-const skeletons = require("../../templates/skeletons");
-const colors = require("colors");
-const uuid = require("uuid");
-const os = require('os');
 const path = require("path");
-const cakeManifest = require("../../lib/src/elements/CakeManifest");
-
 const { execSync } = require("child_process");
+require("colors");
 const logger = require("../../lib/src/lib/Loggers");
+const { getMinecraftPath } = require("../../lib/src/utils/minecraft");
+const { readConfig, addonFoldersExist } = require("../../lib/src/utils/config");
 
 exports.command = "save";
-exports.desc = "Guardar proyecto para pruebas";
+exports.desc = "Guardar proyecto en Minecraft para pruebas";
 exports.builder = {
-    resource: {
-        type: "boolean",
-        alias: "r",
-        description: "package type",
-    },
     server: {
         type: "boolean",
         alias: "s",
-        description: "save addon in development server"
-    }
-};
-
-const runTsc = () => {
-    if (fs.existsSync("./tsconfig.json")) {
-        try {
-            logger.Log(`Compilando TypeScript...`.yellow);
-            execSync("tsc", { stdio: "inherit" });
-            logger.Success(`TypeScript compilado con éxito.`.green);
-        } catch (err) {
-            logger.Error(`Error al compilar TypeScript.`.red);
-        }
-    }
+        description: "Guarda el addon en ./server/ en lugar del Minecraft local",
+    },
 };
 
 exports.handler = async function (argv) {
-    runTsc();
-    if(argv.server) {
-        saveInServer();
+    compileTsIfNeeded();
+
+    if (!addonFoldersExist()) {
+        console.log(`[!] Asegúrate de que existan las carpetas "addon/BP" y "addon/RP".`.red);
         return;
     }
 
-    const pcake_file = fs.readFileSync('./pcake.config.json', { encoding: 'utf8' });
-    const config = JSON.parse(pcake_file);
-    if(!fs.existsSync("./addon/BP") || !fs.existsSync("./addon/RP")) {
-        console.log(`[!] Asegurate de que tanto la carpeta "BP" y "RP" existan en tu proyecto.`.red);
-        return
-    };
+    const config = readConfig();
 
-    const rutaDirectorioPrincipal = os.homedir();
-    // path.join(rutaDirectorioPrincipal, 'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang')
-    const rutaCarpetaUsuario = path.join(rutaDirectorioPrincipal, 'AppData', 'Roaming', 'Minecraft Bedrock', 'Users', 'Shared', 'games', 'com.mojang');
+    // Elige el destino: la carpeta ./server/ o la instalación local de Minecraft
+    const basePath = argv.server ? "./server" : getMinecraftPath();
+    await copyAddonTo(config, basePath);
 
-    if('name' in config && 'identifier' in config) {
-        await fs.remove(path.join(rutaCarpetaUsuario, 'development_behavior_packs', `${config.name}[${config.identifier}] - BP`)).then(() => {
-            fs.copy("./addon/BP", path.join(rutaCarpetaUsuario, 'development_behavior_packs', `${config.name}[${config.identifier}] - BP`));
-        });
-        await fs.remove(path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`)).then(() => {
-            fs.copy("./addon/RP", path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`));
-        });
-    }
-
-    logger.Success(`Proyecto guardado con éxito.`);
+    logger.Success("Proyecto guardado con éxito.");
 };
 
-const saveInServer = async () => {
-    const pcake_file = fs.readFileSync('./pcake.config.json', { encoding: 'utf8' });
-    const config = JSON.parse(pcake_file);
-    if(!fs.existsSync("./addon/BP") || !fs.existsSync("./addon/RP")) {
-        console.log(`[!] Asegurate de que tanto la carpeta "BP" y "RP" existan en tu proyecto.`.red);
-        return
-    };
+/**
+ * Compila TypeScript si existe un tsconfig.json en el proyecto.
+ */
+const compileTsIfNeeded = () => {
+    if (!fs.existsSync("./tsconfig.json")) return;
 
-    const rutaCarpetaUsuario = path.join("./server");
-
-    if('name' in config && 'identifier' in config) {
-        await fs.remove(path.join(rutaCarpetaUsuario, 'development_behavior_packs', `${config.name}[${config.identifier}] - BP`)).then(() => {
-            fs.copy("./addon/BP", path.join(rutaCarpetaUsuario, 'development_behavior_packs', `${config.name}[${config.identifier}] - BP`));
-        });
-        await fs.remove(path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`)).then(() => {
-            fs.copy("./addon/RP", path.join(rutaCarpetaUsuario, 'development_resource_packs', `${config.name}[${config.identifier}] - RP`));
-        });
+    try {
+        logger.Log("Compilando TypeScript...");
+        execSync("tsc", { stdio: "inherit" });
+        logger.Success("TypeScript compilado con éxito.");
+    } catch {
+        logger.Error("Error al compilar TypeScript.");
     }
+};
+
+/**
+ * Copia las carpetas BP y RP al destino indicado.
+ * Primero elimina la versión anterior para evitar archivos obsoletos.
+ *
+ * @param {{ name: string, identifier: string }} config - Configuración del proyecto
+ * @param {string} basePath - Ruta base donde están las carpetas development_*_packs
+ */
+const copyAddonTo = async (config, basePath) => {
+    const packName = `${config.name}[${config.identifier}]`;
+
+    const bpDest = path.join(basePath, "development_behavior_packs", `${packName} - BP`);
+    const rpDest = path.join(basePath, "development_resource_packs", `${packName} - RP`);
+
+    await fs.remove(bpDest);
+    await fs.copy("./addon/BP", bpDest);
+
+    await fs.remove(rpDest);
+    await fs.copy("./addon/RP", rpDest);
 };
