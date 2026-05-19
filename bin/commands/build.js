@@ -2,6 +2,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const os = require("os");
 const archiver = require("archiver");
+const { UICompileDir } = require("../../lib/src/compilers/UICompiler");
 
 exports.command = "build <project_name>";
 exports.desc = "Construir y empaquetar el addon";
@@ -28,6 +29,7 @@ exports.handler = async function (argv) {
 
 /**
  * Build de producción: empaqueta ./addon/BP y ./addon/RP en un archivo .mcaddon.
+ * Los .pcakeui se compilan a un staging temporal; nunca quedan en el proyecto.
  * Guarda el resultado en ./.build/
  */
 const prodBuild = (argv) => {
@@ -40,13 +42,22 @@ const prodBuild = (argv) => {
         fs.mkdirSync("./.build/");
     }
 
+    // Staging temporal: copia de RP sin .pcakeui + compilados
+    const tmpDir  = fs.mkdtempSync(path.join(os.tmpdir(), "pcake-build-"));
+    const rpStage = path.join(tmpDir, "RP");
+
+    fs.copySync("./addon/RP", rpStage, {
+        filter: (src) => !src.endsWith(".pcakeui"),
+    });
+    UICompileDir("./addon/RP", rpStage);
+
     const outputPath = `./.build/build.${argv.zip ? "zip" : "mcaddon"}`;
     const folders = [
         ["./addon/BP", "BP"],
-        ["./addon/RP", "RP"],
+        [rpStage,      "RP"],
     ];
 
-    createArchive(outputPath, folders);
+    createArchive(outputPath, folders, () => fs.removeSync(tmpDir));
 };
 
 /**
@@ -76,11 +87,14 @@ const fastBuild = (argv) => {
  * @param {string} outputPath - Ruta del archivo de salida (ej: "./build/addon.mcaddon")
  * @param {[string, string][]} folders - Array de pares [rutaCarpeta, nombreDentroDelZip]
  */
-const createArchive = (outputPath, folders) => {
+const createArchive = (outputPath, folders, onClose = undefined) => {
     const archive = archiver("zip", { zlib: { level: 9 } });
     const output = fs.createWriteStream(outputPath);
 
-    output.on("close", () => console.log("Archivo creado correctamente."));
+    output.on("close", () => {
+        console.log("Archivo creado correctamente.");
+        if (onClose) onClose();
+    });
     archive.on("error", (err) => console.error("Error al crear el archivo:", err));
 
     archive.pipe(output);

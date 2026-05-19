@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(head *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Addons\\\\NiceBrain\" -Recurse -Force)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Format-Table -AutoSize)"
+    ]
+  }
+}

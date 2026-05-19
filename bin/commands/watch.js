@@ -8,6 +8,7 @@ require("colors");
 
 const { MenuCompiler } = require("../../lib/src/compilers/MenuCompilers");
 const { CopyGuyCompile } = require("../../lib/src/compilers/CopyGuy");
+const { UICompileDir } = require("../../lib/src/compilers/UICompiler");
 const { toolConnect } = require("../../lib");
 const { getMinecraftPath } = require("../../lib/src/utils/minecraft");
 const { readConfig, addonFoldersExist } = require("../../lib/src/utils/config");
@@ -94,9 +95,11 @@ exports.handler = async function (argv) {
      * @param {string} label         - Nombre para el log ("BP" o "RP")
      * @param {string} reloadCommand - Comando de reload a enviar ("reload" o "reload all")
      */
-    const syncFolders = async (source, target, label, reloadCommand = "reload all") => {
+    const syncFolders = async (source, target, label, reloadCommand = "reload all", filter = undefined) => {
         try {
-            await fse.copy(source, target, { overwrite: true });
+            const opts = { overwrite: true };
+            if (filter) opts.filter = filter;
+            await fse.copy(source, target, opts);
 
             const time = new Date().toLocaleTimeString();
             log(`[${time}] ${label} sincronizado.`.green);
@@ -154,10 +157,14 @@ exports.handler = async function (argv) {
     // Nota: el sync de startup copia los archivos SIN enviar "reload" a Minecraft,
     // porque en este momento el jugador puede estar en el mundo con scripts activos.
     // El "reload" solo se envía cuando el desarrollador guarda un archivo (watcher).
-    const startupSync = async (source, target, label) => {
+    const nopcakeui = (src) => !src.endsWith(".pcakeui");
+
+    const startupSync = async (source, target, label, filter = undefined) => {
         try {
             await fse.emptyDir(target);
-            await fse.copy(source, target);
+            const opts = {};
+            if (filter) opts.filter = filter;
+            await fse.copy(source, target, opts);
             log(`[startup] ${label} listo.`.gray);
         } catch (err) {
             log(`Error en sync inicial de ${label}: ${err.message}`.red);
@@ -165,8 +172,10 @@ exports.handler = async function (argv) {
     };
 
     compileTsIfNeeded();
-    startupSync(BP_SRC, BP_DEST, "BP");
-    startupSync(RP_SRC, RP_DEST, "RP");
+    await startupSync(BP_SRC, BP_DEST, "BP");
+    await startupSync(RP_SRC, RP_DEST, "RP", nopcakeui);
+    const uiCount = UICompileDir(RP_SRC, RP_DEST);
+    if (uiCount > 0) log(`UICompiler: ${uiCount} archivo(s) .pcakeui compilado(s).`.gray);
 
     checkGitCommits();
     setInterval(checkGitCommits, 5 * 60 * 1000); // revisar git cada 5 minutos
@@ -190,12 +199,27 @@ exports.handler = async function (argv) {
         })
         .on("unlink", (f) => syncFolders(BP_SRC, BP_DEST, "BP", getBPReloadCommand(f)));
 
+    // Recompila todos los .pcakeui del RP y regenera screen files + _ui_defs.json
+    const recompileUI = () => {
+        const n = UICompileDir(RP_SRC, RP_DEST);
+        if (n > 0) log(`UICompiler: ${n} archivo(s) .pcakeui compilado(s).`.cyan);
+    };
+
     // Watcher de RP
     chokidar
         .watch(RP_SRC, { persistent: true, ignoreInitial: true })
-        .on("add",    () => syncFolders(RP_SRC, RP_DEST, "RP"))
-        .on("change", () => syncFolders(RP_SRC, RP_DEST, "RP"))
-        .on("unlink", () => syncFolders(RP_SRC, RP_DEST, "RP"));
+        .on("add",    (f) => {
+            if (f.endsWith(".pcakeui")) recompileUI();
+            else syncFolders(RP_SRC, RP_DEST, "RP", "reload all", nopcakeui);
+        })
+        .on("change", (f) => {
+            if (f.endsWith(".pcakeui")) recompileUI();
+            else syncFolders(RP_SRC, RP_DEST, "RP", "reload all", nopcakeui);
+        })
+        .on("unlink", (f) => {
+            if (f.endsWith(".pcakeui")) recompileUI();
+            else syncFolders(RP_SRC, RP_DEST, "RP", "reload all", nopcakeui);
+        });
 
     // Watcher de TypeScript
     // Solo compila — el watcher de BP se encarga del sync cuando detecta los .js generados.
@@ -214,6 +238,7 @@ exports.handler = async function (argv) {
     log(`BP:        ${BP_SRC}  →  ${BP_DEST}`.gray);
     log(`RP:        ${RP_SRC}  →  ${RP_DEST}`.gray);
     if (hasTs) log(`TypeScript: activo (${TS_SRC})`.gray);
+    log(`UICompiler: activo (*.pcakeui → *.json en RP/ui/)`.gray);
     log(`WebSocket:  ws://localhost:8080  (usa /connect localhost:8080 en Minecraft)`.gray);
     console.log("");
 };
