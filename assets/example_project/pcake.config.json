@@ -1,4 +1,5 @@
 {
     "name": "ExampleProject",
-    "identifier": "dev"
+    "identifier": "dev",
+    "is_preview": false
 }

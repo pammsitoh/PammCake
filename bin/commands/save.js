@@ -3,7 +3,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 require("colors");
 const logger = require("../../lib/src/lib/Loggers");
-const { getMinecraftPath } = require("../../lib/src/utils/minecraft");
+const { getMinecraftPathFor } = require("../../lib/src/utils/minecraft");
 const { readConfig, addonFoldersExist } = require("../../lib/src/utils/config");
 
 exports.command = "save";
@@ -27,7 +27,9 @@ exports.handler = async function (argv) {
     const config = readConfig();
 
     // Elige el destino: la carpeta ./server/ o la instalación local de Minecraft
-    const basePath = argv.server ? "./server" : getMinecraftPath();
+    const isPreview = config.is_preview === true;
+    if (isPreview) logger.Warn("⚠ Guardando en Minecraft Preview...");
+    const basePath = argv.server ? "./server" : getMinecraftPathFor(isPreview);
     await copyAddonTo(config, basePath);
 
     logger.Success("Proyecto guardado con éxito.");
