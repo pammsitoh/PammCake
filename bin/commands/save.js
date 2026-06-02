@@ -13,7 +13,7 @@ exports.builder = {
         type: "boolean",
         alias: "s",
         description: "Guarda el addon en ./server/ en lugar del Minecraft local",
-    },
+    }
 };
 
 exports.handler = async function (argv) {
